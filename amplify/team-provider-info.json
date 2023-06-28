@@ -1,0 +1,20 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-amplifyd9448da421324-staging-193641-authRole",
+      "UnauthRoleArn": "arn:aws:iam::442022881730:role/amplify-amplifyd9448da421324-staging-193641-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::442022881730:role/amplify-amplifyd9448da421324-staging-193641-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-amplifyd9448da421324-staging-193641-deployment",
+      "UnauthRoleName": "amplify-amplifyd9448da421324-staging-193641-unauthRole",
+      "StackName": "amplify-amplifyd9448da421324-staging-193641",
+      "StackId": "arn:aws:cloudformation:us-east-2:442022881730:stack/amplify-amplifyd9448da421324-staging-193641/1b4a8330-15eb-11ee-9f16-0ac83a98bba9",
+      "AmplifyAppId": "d1ta7opabm9zho"
+    },
+    "categories": {
+      "auth": {
+        "bienvideoba9fa342": {}
+      }
+    }
+  }
+}

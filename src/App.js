@@ -1,5 +1,15 @@
 import VideoPlayer from './VideoPlayer';
 
+import "@aws-amplify/ui-react/styles.css";
+import {
+  withAuthenticator,
+  Button,
+  Heading,
+  Image,
+  View,
+  Card,
+} from "@aws-amplify/ui-react";
+
 import './App.css';
 
 let cues = [
@@ -15,10 +25,16 @@ let cues = [
   }
 ]
 
-const App = () => {
+const App = ({ signOut }) => {
   return (
-    <VideoPlayer videoID="M7lc1UVf-VE" cues={cues} />
+    <View className="App">
+      <Card>
+        <Heading level={1}>We now have Auth!</Heading>
+      </Card>
+      <Button onClick={signOut}>Sign Out</Button>
+      <VideoPlayer videoID="M7lc1UVf-VE" cues={cues} />
+    </View>
   );
 }
 
-export default App;
+export default withAuthenticator(App);
