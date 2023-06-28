@@ -78,6 +78,7 @@ const VideoPlayer = (props) => {
 
   return (
     <>
+      <h1>Bienvideo!</h1>
       <YouTube
         ref={videoRef}
         videoId={props.videoID}
