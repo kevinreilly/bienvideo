@@ -6,6 +6,19 @@ import PropTypes, { array, string } from 'prop-types';
 
 import YouTube from 'react-youtube';
 
+let sampleCues = [
+  {
+    start: 2,
+    end: 8,
+    text: 'this is a test',
+  },
+  {
+    start: 10,
+    end: 16,
+    text: 'this is another test',
+  }
+]
+
 const VideoPlayer = (props) => {
   const videoRef = useRef(null);
 
@@ -19,7 +32,7 @@ const VideoPlayer = (props) => {
   const [newCueText, setNewCueText] = useState('');
 
   useEffect(() => {
-    setCues(props.cues);
+    setCues(sampleCues);
   },[]);
 
   useEffect(() => {
@@ -78,7 +91,6 @@ const VideoPlayer = (props) => {
 
   return (
     <>
-      <h1>Bienvideo!</h1>
       <YouTube
         ref={videoRef}
         videoId={props.videoID}
