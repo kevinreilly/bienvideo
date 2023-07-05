@@ -1,6 +1,75 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const getTrack = /* GraphQL */ `
+  query GetTrack($id: ID!) {
+    getTrack(id: $id) {
+      id
+      videoID
+      cues
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const listTracks = /* GraphQL */ `
+  query ListTracks(
+    $filter: ModelTrackFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listTracks(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        videoID
+        cues
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const syncTracks = /* GraphQL */ `
+  query SyncTracks(
+    $filter: ModelTrackFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncTracks(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        videoID
+        cues
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
 export const getNote = /* GraphQL */ `
   query GetNote($id: ID!) {
     getNote(id: $id) {
@@ -10,6 +79,9 @@ export const getNote = /* GraphQL */ `
       image
       createdAt
       updatedAt
+      _version
+      _deleted
+      _lastChangedAt
       __typename
     }
   }
@@ -28,123 +100,44 @@ export const listNotes = /* GraphQL */ `
         image
         createdAt
         updatedAt
+        _version
+        _deleted
+        _lastChangedAt
         __typename
       }
       nextToken
+      startedAt
       __typename
     }
   }
 `;
-export const getTracks = /* GraphQL */ `
-  query GetTracks($id: ID!) {
-    getTracks(id: $id) {
-      id
-      language
-      cues
-      videoID
-      createdAt
-      updatedAt
-      owner
-      __typename
-    }
-  }
-`;
-export const listTracks = /* GraphQL */ `
-  query ListTracks(
-    $filter: ModelTracksFilterInput
+export const syncNotes = /* GraphQL */ `
+  query SyncNotes(
+    $filter: ModelNoteFilterInput
     $limit: Int
     $nextToken: String
+    $lastSync: AWSTimestamp
   ) {
-    listTracks(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        language
-        cues
-        videoID
-        createdAt
-        updatedAt
-        owner
-        __typename
-      }
-      nextToken
-      __typename
-    }
-  }
-`;
-export const tracksByVideoID = /* GraphQL */ `
-  query TracksByVideoID(
-    $videoID: ID!
-    $sortDirection: ModelSortDirection
-    $filter: ModelTracksFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    tracksByVideoID(
-      videoID: $videoID
-      sortDirection: $sortDirection
+    syncNotes(
       filter: $filter
       limit: $limit
       nextToken: $nextToken
+      lastSync: $lastSync
     ) {
       items {
         id
-        language
-        cues
-        videoID
+        name
+        description
+        image
         createdAt
         updatedAt
-        owner
+        _version
+        _deleted
+        _lastChangedAt
         __typename
       }
       nextToken
-      __typename
-    }
-  }
-`;
-export const getVideo = /* GraphQL */ `
-  query GetVideo($id: ID!) {
-    getVideo(id: $id) {
-      id
-      Tracks {
-        items {
-          id
-          language
-          cues
-          videoID
-          createdAt
-          updatedAt
-          owner
-          __typename
-        }
-        nextToken
-        __typename
-      }
-      createdAt
-      updatedAt
-      owner
-      __typename
-    }
-  }
-`;
-export const listVideos = /* GraphQL */ `
-  query ListVideos(
-    $filter: ModelVideoFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listVideos(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        Tracks {
-          nextToken
-          __typename
-        }
-        createdAt
-        updatedAt
-        owner
-        __typename
-      }
-      nextToken
+      startedAt
       __typename
     }
   }

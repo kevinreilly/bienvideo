@@ -1,39 +1,136 @@
+import {useMemo, useState} from 'react';
+
 import styled from '@emotion/styled/macro';
+
+import useMediaQuery from '@mui/material/useMediaQuery';
+import {
+  createTheme,
+  ThemeProvider
+} from '@mui/material/styles';
+
+import {
+  AppBar,
+  Button,
+  CssBaseline,
+  IconButton,
+  InputAdornment,
+  Paper,
+  TextField,
+  Toolbar,
+  Typography,
+} from '@mui/material';
+
+import Grid from '@mui/material/Unstable_Grid2';
+
+import {
+  LocalPizza as LocalPizzaIcon,
+  Menu as MenuIcon,
+  Search as SearchIcon
+} from '@mui/icons-material';
 
 import "@aws-amplify/ui-react/styles.css";
 import {
-  Button,
   withAuthenticator,
 } from '@aws-amplify/ui-react';
 
-import Notes from './Notes';
 import VideoPlayer from "./VideoPlayer";
 
 let sampleVideoId = "M7lc1UVf-VE";
 
 const App = ({ signOut }) => {
+
+  const [search, setSearch] = useState(null);
+
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: prefersDarkMode ? 'dark' : 'light',
+        },
+      }),
+    [prefersDarkMode],
+  );
+
+  const youtubeURLParser = (url) => {
+    var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    var match = url.match(regExp);
+    return (match&&match[7].length==11)? match[7] : false;
+  }
+
+  const handleSearchKeyDown = (ev) => {
+    ev.key === 'Enter' && setSearch(youtubeURLParser(ev.target.value));
+  }
+
   return (
-    <StyledWrapper>
-      <StyledAppBar as="header">
-        <nav>
-          <StyledButton onClick={signOut}>
+    <ThemeProvider theme={theme}>
+      <CssBaseline enableColorScheme />
+      <AppBar position="sticky">
+        <Toolbar sx={{gap: 2}}>
+          <IconButton
+            size="small"
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            >
+            <MenuIcon fontSize="inherit" />
+          </IconButton>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            BienVideo
+          </Typography>
+          <IconButton
+            size="small"
+            href="https://www.buymeacoffee.com/kevinreilly"
+            target="blank"
+            color="inherit"
+            aria-label="buy me a pizza"
+            >
+              <LocalPizzaIcon fontSize="inherit" />
+          </IconButton>
+          <Button
+            onClick={signOut}
+            size="small"
+            color="inherit"
+            >
             sign out
-          </StyledButton>
-        </nav>
-      </StyledAppBar>
-      <StyledMain>
-        <VideoPlayer videoID={sampleVideoId} />
-      </StyledMain>
-      <StyledAppBar as="footer">
-        <StyledButton
-          as="a"
-          href="https://www.buymeacoffee.com/kevinreilly"
-          target="blank"
-          >
-            buy me a coffee
-        </StyledButton>
-      </StyledAppBar>
-    </StyledWrapper>
+          </Button>
+        </Toolbar>
+      </AppBar>
+      <Grid
+        as="main"
+        container
+        justifyContent="center"
+        >
+        <Grid container p={2} gap={2} width="100%">
+          {!search &&
+            <Grid xs={12}>
+              <Typography variant="h6" component="h1">Audio Descriptions for YouTube Videos</Typography>
+            </Grid>
+          }
+          <Grid xs={12}>
+            <TextField
+              size="small"
+              label="Video URL"
+              fullWidth
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton size="small">
+                      <SearchIcon fontSize="inherit" />
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
+              onKeyDown={handleSearchKeyDown}
+            />
+          </Grid>
+        </Grid>
+        {search &&
+          <VideoPlayer videoID={search} />
+        }
+      </Grid>
+    </ThemeProvider>
   );
 };
 

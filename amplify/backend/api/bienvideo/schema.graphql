@@ -1,3 +1,9 @@
+type Track @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  videoID: String!
+  cues: [AWSJSON!]
+}
+
 type Note @model @auth(rules: [{allow: public}]) {
   id: ID!
   name: String!
