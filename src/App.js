@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 
 import styled from '@emotion/styled/macro';
 
@@ -35,8 +35,6 @@ import {
 
 import VideoPlayer from "./VideoPlayer";
 
-let sampleVideoId = "M7lc1UVf-VE";
-
 const App = ({ signOut }) => {
 
   const [search, setSearch] = useState(null);
@@ -52,6 +50,12 @@ const App = ({ signOut }) => {
       }),
     [prefersDarkMode],
   );
+
+  useEffect(() => {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    urlParams.has('url') && setSearch(urlParams.get('url'));
+  },[]);
 
   const youtubeURLParser = (url) => {
     var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
