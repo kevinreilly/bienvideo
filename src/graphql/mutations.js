@@ -1,6 +1,108 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const createVideo = /* GraphQL */ `
+  mutation CreateVideo(
+    $input: CreateVideoInput!
+    $condition: ModelVideoConditionInput
+  ) {
+    createVideo(input: $input, condition: $condition) {
+      id
+      vid
+      tags
+      Tracks {
+        items {
+          id
+          cues
+          videoID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          __typename
+        }
+        nextToken
+        startedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const updateVideo = /* GraphQL */ `
+  mutation UpdateVideo(
+    $input: UpdateVideoInput!
+    $condition: ModelVideoConditionInput
+  ) {
+    updateVideo(input: $input, condition: $condition) {
+      id
+      vid
+      tags
+      Tracks {
+        items {
+          id
+          cues
+          videoID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          __typename
+        }
+        nextToken
+        startedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const deleteVideo = /* GraphQL */ `
+  mutation DeleteVideo(
+    $input: DeleteVideoInput!
+    $condition: ModelVideoConditionInput
+  ) {
+    deleteVideo(input: $input, condition: $condition) {
+      id
+      vid
+      tags
+      Tracks {
+        items {
+          id
+          cues
+          videoID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          __typename
+        }
+        nextToken
+        startedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
 export const createTrack = /* GraphQL */ `
   mutation CreateTrack(
     $input: CreateTrackInput!
@@ -8,8 +110,8 @@ export const createTrack = /* GraphQL */ `
   ) {
     createTrack(input: $input, condition: $condition) {
       id
-      videoID
       cues
+      videoID
       createdAt
       updatedAt
       _version
@@ -26,8 +128,8 @@ export const updateTrack = /* GraphQL */ `
   ) {
     updateTrack(input: $input, condition: $condition) {
       id
-      videoID
       cues
+      videoID
       createdAt
       updatedAt
       _version
@@ -44,8 +146,8 @@ export const deleteTrack = /* GraphQL */ `
   ) {
     deleteTrack(input: $input, condition: $condition) {
       id
-      videoID
       cues
+      videoID
       createdAt
       updatedAt
       _version

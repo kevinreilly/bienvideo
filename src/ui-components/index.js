@@ -5,7 +5,7 @@
  **************************************************************************/
 
 export { default as studioTheme } from "./studioTheme";
-export { default as TrackCreateForm } from "./TrackCreateForm";
-export { default as TrackUpdateForm } from "./TrackUpdateForm";
+export { default as VideoCreateForm } from "./VideoCreateForm";
+export { default as VideoUpdateForm } from "./VideoUpdateForm";
 export { default as NoteCreateForm } from "./NoteCreateForm";
 export { default as NoteUpdateForm } from "./NoteUpdateForm";

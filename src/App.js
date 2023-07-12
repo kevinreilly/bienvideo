@@ -1,46 +1,54 @@
+//react
 import {useEffect, useMemo, useState} from 'react';
 
-import styled from '@emotion/styled/macro';
+//aws
+import { Amplify } from 'aws-amplify';
+import "@aws-amplify/ui-react/styles.css";
 
+import {
+  Authenticator,
+  defaultDarkModeOverride,
+  ThemeProvider as AuthThemeProvider,
+  useAuthenticator,
+} from '@aws-amplify/ui-react';
+
+import awsExports from './aws-exports';
+
+//mui
 import useMediaQuery from '@mui/material/useMediaQuery';
+
 import {
   createTheme,
   ThemeProvider
 } from '@mui/material/styles';
 
 import {
-  AppBar,
-  Button,
+  Box,
   CssBaseline,
-  IconButton,
-  InputAdornment,
-  Paper,
-  TextField,
-  Toolbar,
+  Dialog,
   Typography,
 } from '@mui/material';
 
 import Grid from '@mui/material/Unstable_Grid2';
 
-import {
-  LocalPizza as LocalPizzaIcon,
-  Menu as MenuIcon,
-  Search as SearchIcon
-} from '@mui/icons-material';
+//components
+import Header from './Header';
+import Home from './Home';
+import Search from './Search';
+import Stage from "./Stage";
+import VideoList from "./VideoList";
 
-import "@aws-amplify/ui-react/styles.css";
-import {
-  withAuthenticator,
-} from '@aws-amplify/ui-react';
+Amplify.configure(awsExports);
 
-import VideoPlayer from "./VideoPlayer";
+const App = () => {
 
-const App = ({ signOut }) => {
+  const { user, signOut } = useAuthenticator((context) => [context.user]);
 
-  const [search, setSearch] = useState(null);
+  const [activeVID, setActiveVID] = useState(null);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-
   const theme = useMemo(
     () =>
       createTheme({
@@ -51,11 +59,23 @@ const App = ({ signOut }) => {
     [prefersDarkMode],
   );
 
+  const authTheme = {
+    name: 'auth-theme',
+    overrides: [defaultDarkModeOverride],
+  }
+
   useEffect(() => {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    urlParams.has('url') && setSearch(urlParams.get('url'));
+    if (urlParams.has('url')) {
+      setActiveVID(youtubeURLParser(urlParams.get('url')));
+      //setSearchField(urlParams.get('url'));
+    }
   },[]);
+
+  useEffect(() => {
+    console.log(`activeVID`, activeVID);
+  },[activeVID]);
 
   const youtubeURLParser = (url) => {
     var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
@@ -63,129 +83,53 @@ const App = ({ signOut }) => {
     return (match&&match[7].length==11)? match[7] : false;
   }
 
-  const handleSearchKeyDown = (ev) => {
-    ev.key === 'Enter' && setSearch(youtubeURLParser(ev.target.value));
+  const handleSearch = (query) => {
+    setActiveVID(youtubeURLParser(query));
+  }
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  }
+
+  const handleLoginClick = () => {
+    user ? signOut() : setDialogOpen(true);
   }
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline enableColorScheme />
-      <AppBar position="sticky">
-        <Toolbar sx={{gap: 2}}>
-          <IconButton
-            size="small"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            >
-            <MenuIcon fontSize="inherit" />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            BienVideo
-          </Typography>
-          <IconButton
-            size="small"
-            href="https://www.buymeacoffee.com/kevinreilly"
-            target="blank"
-            color="inherit"
-            aria-label="buy me a pizza"
-            >
-              <LocalPizzaIcon fontSize="inherit" />
-          </IconButton>
-          <Button
-            onClick={signOut}
-            size="small"
-            color="inherit"
-            >
-            sign out
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <Grid
+      <Header user={user} handleLoginClick={handleLoginClick} />
+      <Box
         as="main"
-        container
         justifyContent="center"
         >
-        <Grid container p={2} gap={2} width="100%">
-          {!search &&
-            <Grid xs={12}>
-              <Typography variant="h6" component="h1">Audio Descriptions for YouTube Videos</Typography>
-            </Grid>
-          }
+        <Grid container p={2} rowSpacing={2} width="100%">
           <Grid xs={12}>
-            <TextField
-              size="small"
-              label="Video URL"
-              fullWidth
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton size="small">
-                      <SearchIcon fontSize="inherit" />
-                    </IconButton>
-                  </InputAdornment>
-                )
-              }}
-              onKeyDown={handleSearchKeyDown}
-            />
+            <Typography variant="h6" component="h1">Videos with Audio Descriptions</Typography>
+          </Grid>
+          <Grid xs={12}>
+            <Search handleSearch={handleSearch} />
           </Grid>
         </Grid>
-        {search &&
-          <VideoPlayer videoID={search} />
+        {activeVID &&
+          <Stage vid={activeVID} />
         }
-      </Grid>
+        <VideoList handleSearch={handleSearch} />
+      </Box>
+      <Dialog onClose={handleDialogClose} open={dialogOpen}>
+        <AuthThemeProvider theme={authTheme} colorMode="system">
+          <Authenticator>
+            {({ signOut, user }) => (
+              <>
+                <h1>Hello {user.username}</h1>
+                <button onClick={signOut}>Sign out</button>
+              </>
+            )}
+          </Authenticator>
+        </AuthThemeProvider>
+      </Dialog>
     </ThemeProvider>
   );
 };
 
-const StyledWrapper = styled.div`
-  --theme: turquoise;
-  --background: #fff;
-  --color: #333;
-  @media (prefers-color-scheme: dark) {
-    --theme: #111;
-    --background: #333;
-    --color: #fff;
-  }
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  font-family: monospace;
-  background: var(--background);
-  color: var(--color);
-`;
-
-const StyledMain = styled.main`
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 0.5rem;
-`;
-
-const StyledAppBar = styled.div`
-  background: var(--theme);
-  min-height: 2rem;
-  display: flex;
-  vertical-align: middle;
-  justify-content: end;
-  padding: 0.5rem;
-`;
-
-const StyledButton = styled.button`
-  appearance: none;
-  background: var(--background);
-  border: 0.125rem solid var(--color);
-  border-radius: 0.25rem;
-  font-weight: bold;
-  color: var(--color);
-  text-decoration: none;
-  padding: 0.25rem 0.5rem;
-  font-size: 1rem;
-  line-height: 1;
-  cursor: pointer;
-  &:hover {
-    opacity: 0.875;
-  }
-`;
-
-export default withAuthenticator(App);
+export default App;

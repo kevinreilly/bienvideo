@@ -1,12 +1,144 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const getVideo = /* GraphQL */ `
+  query GetVideo($id: ID!) {
+    getVideo(id: $id) {
+      id
+      vid
+      tags
+      Tracks {
+        items {
+          id
+          cues
+          videoID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          __typename
+        }
+        nextToken
+        startedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const listVideos = /* GraphQL */ `
+  query ListVideos(
+    $filter: ModelVideoFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listVideos(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        vid
+        tags
+        Tracks {
+          nextToken
+          startedAt
+          __typename
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const syncVideos = /* GraphQL */ `
+  query SyncVideos(
+    $filter: ModelVideoFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncVideos(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        vid
+        tags
+        Tracks {
+          nextToken
+          startedAt
+          __typename
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const videosByVid = /* GraphQL */ `
+  query VideosByVid(
+    $vid: String!
+    $sortDirection: ModelSortDirection
+    $filter: ModelVideoFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    videosByVid(
+      vid: $vid
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        vid
+        tags
+        Tracks {
+          nextToken
+          startedAt
+          __typename
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
 export const getTrack = /* GraphQL */ `
   query GetTrack($id: ID!) {
     getTrack(id: $id) {
       id
-      videoID
       cues
+      videoID
       createdAt
       updatedAt
       _version
@@ -25,8 +157,8 @@ export const listTracks = /* GraphQL */ `
     listTracks(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        videoID
         cues
+        videoID
         createdAt
         updatedAt
         _version
@@ -55,8 +187,40 @@ export const syncTracks = /* GraphQL */ `
     ) {
       items {
         id
-        videoID
         cues
+        videoID
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const tracksByVideoID = /* GraphQL */ `
+  query TracksByVideoID(
+    $videoID: ID!
+    $sortDirection: ModelSortDirection
+    $filter: ModelTrackFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    tracksByVideoID(
+      videoID: $videoID
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        cues
+        videoID
         createdAt
         updatedAt
         _version
