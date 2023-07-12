@@ -81,7 +81,7 @@ ${cueData.text}`
       query: videosByVid,
       variables: {vid: id},
     });
-    setTags(apiData.data.videosByVid.items[0].tags);
+    //setTags(apiData.data.videosByVid.items[0].tags);
   }
 
   const startDescribing = (activeCue) => {
