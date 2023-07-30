@@ -1,4 +1,6 @@
-import {useState} from 'react';
+import { createSearchParams, useNavigate } from 'react-router-dom';
+
+import styled from '@emotion/styled';
 
 import {
   IconButton,
@@ -10,40 +12,48 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 
-const Search = (props) => {
+const Search = () => {
 
-  const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
-  const handleChange = (ev) => {
-    setSearch(ev.target.value);
-  }
+  const handleSubmit = (ev) => {
+    ev.preventDefault();
+    let formData = new FormData(ev.currentTarget);
+    let newURL = formData.get("url");
+    if (!newURL) return;
 
-  const handleKeyDown = (ev) => {
-    if (ev.key === 'Enter') {
-      props.handleSearch(search);
-    }
+    navigate({
+      pathname: '/watch',
+      search: `?${createSearchParams({url: newURL})}`
+    });
   }
 
   return (
-    <TextField
-      size="small"
-      label="Video URL"
-      fullWidth
-      value={search}
-      onChange={handleChange}
-      InputProps={{
-        endAdornment: (
-          <InputAdornment position="end">
-            <IconButton
-              size="small">
-              <SearchIcon fontSize="inherit" />
-            </IconButton>
-          </InputAdornment>
-        )
-      }}
-      onKeyDown={handleKeyDown}
-    />
+    <StyledForm onSubmit={handleSubmit}>
+      <TextField
+        name="url"
+        size="small"
+        aria-label="search"
+        placeholder="Video URL"
+        fullWidth
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+                <SearchIcon />
+            </InputAdornment>
+          )
+        }}
+      />
+    </StyledForm>
+    
   )
 }
+
+const StyledForm = styled.form`
+  transition: 0.25s;
+  &:focus-within {
+    flex-grow: 1;
+  }
+`;
 
 export default Search;

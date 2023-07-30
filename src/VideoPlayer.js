@@ -11,10 +11,11 @@ import {
   Button,
   Chip,
   CircularProgress,
+  //Grid,
   Typography,
 } from '@mui/material';
 
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Unstable_Grid2/Grid2';
 
 import PropTypes, { array, object, string } from 'prop-types';
 
@@ -22,9 +23,12 @@ import ReactPlayer from 'react-player';
 
 import { createSilentAudio } from 'create-silent-audio';
 
+import { secondsToTime } from './utils';
+
 const VideoPlayer = (props) => {
   const audioRef = useRef(null);
   const videoRef = useRef(null);
+  const loadingRef = useRef(null);
 
   const [ready, setReady] = useState(false);
 
@@ -36,24 +40,18 @@ const VideoPlayer = (props) => {
 
   const speechSynth = window.speechSynthesis;
 
-  const secondsToTime = (numSeconds) => {
-    let pad = function(num, size) { return ('000' + num).slice(size * -1); },
-    time = parseFloat(numSeconds).toFixed(3),
-    hours = Math.floor(time / 60 / 60),
-    minutes = Math.floor(time / 60) % 60,
-    seconds = Math.floor(time - minutes * 60),
-    milliseconds = time.slice(-3);
-
-    return pad(hours, 2) + ':' + pad(minutes, 2) + ':' + pad(seconds, 2) + '.' + pad(milliseconds, 3);
-  }
-
   useEffect(() => {
-    if (props.tracks?.items?.length) {
-      console.log('tracks');
+    setTrackURL(null);
+
+    fetchVideo(props.vid);
+
+    if (props.tracks?.length) {
       let cues = `WEBVTT`;
 
-      JSON.parse(props.tracks.items[0].cues).map((cue) => {
-        let cueData = JSON.parse(cue);
+      let cuesData = typeof props.tracks[0] === 'string' ? JSON.parse(props.tracks) : props.tracks;
+
+      cuesData.map((cue) => {
+        let cueData = typeof cue === 'string' ? JSON.parse(cue) : cue;
         cues += `
 
 ${secondsToTime(cueData.start)} --> ${secondsToTime(cueData.end)}
@@ -72,8 +70,6 @@ ${cueData.text}`
         author_name: data.author_name,
         thumbnail_url: data.thumbnail_url
     }));
-
-    fetchVideo(props.vid);
   },[props.vid, props.tracks]);
 
   async function fetchVideo(id) {
@@ -136,7 +132,11 @@ ${cueData.text}`
   }
 
   const handleProgress = (progress) => {
-    audioRef.current.currentTime = progress.playedSeconds;
+    if (audioRef.current) {
+      audioRef.current.currentTime = progress.playedSeconds;
+    }
+
+    props.onTimeChange && props.onTimeChange(progress.playedSeconds);
   }
 
   const handleInternalPlayClick = (ev) => {
@@ -148,12 +148,25 @@ ${cueData.text}`
   }
 
   return (
-    <Grid container rowSpacing={2} component="figure">
-      <Grid xs={12}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        gap: 2,
+      }}>
+      <Box>
         <Box sx={{position: 'relative', pt: '56.25%', width: '100%'}}>
           <ReactPlayer
             ref={videoRef}
             controls={true}
+            config={{
+              youtube: {
+                playerVars: {
+                  'origin': 'bienvideo.com'
+                }
+              }
+            }}
             url={`https://www.youtube.com/watch?v=${props.vid}`}
             width="100%"
             height="100%"
@@ -168,7 +181,10 @@ ${cueData.text}`
             onKeyDown={handleInternalPlayClick}
           />
           {!ready &&
-            <Box sx={{
+            <Box
+              ref={loadingRef}
+              aria-label="loading video"
+              sx={{
               position: 'absolute',
               top: 0,
               left: 0,
@@ -193,8 +209,8 @@ ${cueData.text}`
             <track src={trackURL} kind="descriptions" srcLang='en' label="English"></track>
           </audio>
         }
-      </Grid>
-      <Grid xs={12} px={2} component="figcaption">
+      </Box>
+      <Box sx={{mb: 2}}>
         <Typography
           variant="h6"
           component="h2"
@@ -212,14 +228,14 @@ ${cueData.text}`
             label={tag}
           />
         )}
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 }
 
 VideoPlayer.propTypes = {
   vid: string,
-  tracks: object,
+  tracks: array,
 }
 
 export default VideoPlayer;

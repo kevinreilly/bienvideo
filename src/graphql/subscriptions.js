@@ -7,27 +7,22 @@ export const onCreateVideo = /* GraphQL */ `
       id
       vid
       tags
+      requests
       Tracks {
         items {
           id
           cues
           videoID
+          createdBy
           createdAt
           updatedAt
-          _version
-          _deleted
-          _lastChangedAt
           __typename
         }
         nextToken
-        startedAt
         __typename
       }
       createdAt
       updatedAt
-      _version
-      _deleted
-      _lastChangedAt
       __typename
     }
   }
@@ -38,27 +33,22 @@ export const onUpdateVideo = /* GraphQL */ `
       id
       vid
       tags
+      requests
       Tracks {
         items {
           id
           cues
           videoID
+          createdBy
           createdAt
           updatedAt
-          _version
-          _deleted
-          _lastChangedAt
           __typename
         }
         nextToken
-        startedAt
         __typename
       }
       createdAt
       updatedAt
-      _version
-      _deleted
-      _lastChangedAt
       __typename
     }
   }
@@ -69,27 +59,22 @@ export const onDeleteVideo = /* GraphQL */ `
       id
       vid
       tags
+      requests
       Tracks {
         items {
           id
           cues
           videoID
+          createdBy
           createdAt
           updatedAt
-          _version
-          _deleted
-          _lastChangedAt
           __typename
         }
         nextToken
-        startedAt
         __typename
       }
       createdAt
       updatedAt
-      _version
-      _deleted
-      _lastChangedAt
       __typename
     }
   }
@@ -100,11 +85,9 @@ export const onCreateTrack = /* GraphQL */ `
       id
       cues
       videoID
+      createdBy
       createdAt
       updatedAt
-      _version
-      _deleted
-      _lastChangedAt
       __typename
     }
   }
@@ -115,11 +98,9 @@ export const onUpdateTrack = /* GraphQL */ `
       id
       cues
       videoID
+      createdBy
       createdAt
       updatedAt
-      _version
-      _deleted
-      _lastChangedAt
       __typename
     }
   }
@@ -130,11 +111,9 @@ export const onDeleteTrack = /* GraphQL */ `
       id
       cues
       videoID
+      createdBy
       createdAt
       updatedAt
-      _version
-      _deleted
-      _lastChangedAt
       __typename
     }
   }
@@ -148,9 +127,6 @@ export const onCreateNote = /* GraphQL */ `
       image
       createdAt
       updatedAt
-      _version
-      _deleted
-      _lastChangedAt
       __typename
     }
   }
@@ -164,9 +140,6 @@ export const onUpdateNote = /* GraphQL */ `
       image
       createdAt
       updatedAt
-      _version
-      _deleted
-      _lastChangedAt
       __typename
     }
   }
@@ -180,9 +153,6 @@ export const onDeleteNote = /* GraphQL */ `
       image
       createdAt
       updatedAt
-      _version
-      _deleted
-      _lastChangedAt
       __typename
     }
   }

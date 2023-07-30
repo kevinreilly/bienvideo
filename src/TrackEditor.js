@@ -1,119 +1,135 @@
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useState} from 'react';
 
-import styled from '@emotion/styled/macro';
-
-import PropTypes, { array, string } from 'prop-types';
-
-import YouTube from 'react-youtube';
-
-import { API, Storage } from 'aws-amplify';
+import { useOutletContext, useSearchParams } from "react-router-dom";
 
 import {
-  createTrack as createTrackMutation
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardActionArea,
+  InputAdornment,
+  IconButton,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import Grid from "@mui/material/Unstable_Grid2/Grid2";
+
+import {
+  ArrowRightAlt as ArrowRightAltIcon,
+  MyLocation as MyLocationIcon,
+  Delete as DeleteIcon,
+} from "@mui/icons-material";
+
+import VideoPlayer from "./VideoPlayer";
+
+import { secondsToTime } from "./utils";
+
+import { API } from 'aws-amplify';
+
+import {
+  videosByVid,
+  getTrack,
+} from "./graphql/queries";
+
+import {
+  createTrack as createTrackMutation,
+  createVideo as createVideoMutation,
+  deleteTrack as deleteTrackMutation,
+  updateTrack as updateTrackMutation,
+  updateVideo as updateVideoMutation,
 } from "./graphql/mutations";
 
-let sampleCues = [
-  {
-    start: 2,
-    end: 4,
-    text: 'this is a test or a fairly long text track cue that should be longer then its alloted time range',
-  },
-  {
-    start: 10,
-    end: 16,
-    text: 'this is another test',
-  }
-]
+const TrackEditor = (props) => {
 
-const VideoPlayer = (props) => {
-  const videoRef = useRef(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const {
+    activeVID,
+    user,
+  } = useOutletContext();
+
+  const [videoData, setVideoData] = useState(null);
+
+  const [isNewVideo, setIsNewVideo] = useState(false);
+
+  const [editingCue, setEditingCue] = useState(null);
+
+  const [startFieldValue, setStartFieldValue] = useState(0);
+  const [endFieldValue, setEndFieldValue] = useState(0);
+  const [cueFieldValue, setCueFieldValue] = useState('');
+
+  const [currentTime, setCurrentTime] = useState(0);
 
   const [cues, setCues] = useState([]);
 
-  const [nextCueIndex, setNextCueIndex] = useState(0);
-
-  const [progressTime, setProgressTime] = useState(0);
-  const [currentCue, setCurrentCue] = useState(null);
-
-  const [startTime, setStartTime] = useState(0);
-  const [endTime, setEndTime] = useState(0);
-  const [newCueText, setNewCueText] = useState('');
-
-  const [pseudoPaused, setPseudoPaused] = useState(false);
+  const [trackData, setTrackData] = useState(null);
 
   useEffect(() => {
-    setCues(sampleCues);
+    fetchVideo(activeVID);
+
+    (searchParams.size && searchParams.get('track')) && fetchTrack(searchParams.get('track'));
   },[]);
 
   useEffect(() => {
-    if (speechSynth.speaking) {
-      if (progressTime >= currentCue.end) {
-        videoRef.current.internalPlayer.pauseVideo();
-        setPseudoPaused(true);
-      }
-    } else {
-      cues?.forEach(cue => {
-        if (cue.start <= progressTime  && progressTime <= cue.end) {
-          setCurrentCue(cue);
-        }
-      });
-    }
-  },[progressTime]);
+    trackData && setCues(JSON.parse(trackData.cues));
+  },[trackData]);
 
   useEffect(() => {
-    if (currentCue) {
-      let utterThis = new SpeechSynthesisUtterance(currentCue.text);
-      speechSynth.speak(utterThis);
+    (videoData?.items.length && isNewVideo) && createTrack();
+  },[videoData]);
 
-      utterThis.addEventListener('end', () => {
-        videoRef.current.internalPlayer.playVideo();
-        setPseudoPaused(false);
-      });
+  const handleTimeChange = (time) => {
+    setCurrentTime(time);
+  }
+
+  const handleTargetClick = (place) => {
+    if (place === 'start') {
+      setStartFieldValue(currentTime);
+    } else if (place === 'end') {
+      setEndFieldValue(currentTime);
     }
-  },[currentCue]);
-
-  const speechSynth = window.speechSynthesis;
-
-  const onReady = (ev) => {
-    const iframeWindow = ev.target.getIframe().contentWindow;
-
-    speechSynth.cancel();
-
-    window.addEventListener("message", function(ev) {
-      if (ev.source === iframeWindow) {
-        let data = JSON.parse(ev.data);
-        if (data.event === "infoDelivery" && data.info && data.info.currentTime) {
-          setProgressTime(data.info.currentTime);
-        }
-      }
-    })
   }
 
   const handleAddCueClick = () => {
-    setCues([
-      ...cues,
-      {
-        start: startTime,
-        end: endTime,
-        text: newCueText,
-      }
-    ]);
-  }
-
-  const handleDeleteCueClick = (cueIndex) => {
     let cuesCopy = [...cues];
-    cuesCopy.splice(cueIndex, 1);
+
+    cuesCopy.push({
+      start: Number(startFieldValue),
+      end: Number(endFieldValue),
+      text: cueFieldValue
+    });
+
+    cuesCopy.sort((a, b) => a.start - b.start);
+
     setCues(cuesCopy);
   }
 
-  const handleAddTrack = () => {
-    createTrack();
+  const handleSubmitClick = () => {
+    if (videoData.items.length) {
+      if (trackData) {
+        updateTrack();
+      } else {
+        createTrack();
+        updateVideo();
+      }
+    } else {
+      createVideo().then(() => 
+        fetchVideo(activeVID)
+      )
+    }
+  }
+
+  const handleDeleteClick = () => {
+    deleteTrack();
   }
 
   async function createTrack() {
     const data = {
-      videoID: "M7lc1UVf-VE",
-      cues: JSON.stringify(sampleCues)
+      cues: JSON.stringify(cues),
+      videoID: videoData.items[0].id,
+      createdBy: user.attributes.sub,
     };
     await API.graphql({
       query: createTrackMutation,
@@ -121,104 +137,305 @@ const VideoPlayer = (props) => {
     });
   }
 
-  const handlePlay = () => {
-    if (speechSynth.paused) {
-      speechSynth.resume();
-    } else if (speechSynth.speaking) {
-      videoRef.current.internalPlayer.pauseVideo();
-      speechSynth.pause();
-    }
+  async function updateVideo() {
+    const data = {
+      id: videoData.items[0].id,
+      tags: ['described'],
+      requests: [],
+    };
+    await API.graphql({
+      query: updateVideoMutation,
+      variables: { input: data },
+    });
   }
 
-  const handlePause = () => {
-    if (!pseudoPaused && speechSynth.speaking) {
-      speechSynth.pause();
+  async function createVideo() {
+    setIsNewVideo(true);
+    const data = {
+      vid: activeVID,
+      tags: ['described'],
+    };
+    await API.graphql({
+      query: createVideoMutation,
+      variables: { input: data },
+    });
+  }
+
+  async function fetchVideo(vid) {
+    const apiData = await API.graphql({
+      query: videosByVid,
+      variables: {vid: vid},
+    });
+    setVideoData(apiData.data.videosByVid);
+  }
+
+  async function fetchTrack(id) {
+    const apiData = await API.graphql({
+      query: getTrack,
+      variables: {id: id},
+    });
+    setTrackData(apiData.data.getTrack);
+  }
+
+  async function updateTrack() {
+    const data = {
+      id: trackData.id,
+      cues: JSON.stringify(cues),
+    };
+    await API.graphql({
+      query: updateTrackMutation,
+      variables: { input: data },
+    });
+  }
+
+  async function deleteTrack() {
+    const data = {
+      id: trackData.id,
+    };
+    await API.graphql({
+      query: deleteTrackMutation,
+      variables: { input: data },
+    });
+  }
+
+  const handleStartFieldValueChange = (ev) => {
+    setStartFieldValue(ev.target.value);
+  }
+
+  const handleEndFieldValueChange = (ev) => {
+    setEndFieldValue(ev.target.value);
+  }
+
+  const handleCueFieldValueChange = (ev) => {
+    setCueFieldValue(ev.target.value);
+  }
+
+  const handleCueClick = (index) => {
+    setEditingCue(index);
+
+    setStartFieldValue(cues[index].start);
+    setEndFieldValue(cues[index].end);
+    setCueFieldValue(cues[index].text);
+  }
+
+  const handleUpdateCueClick = () => {
+    let cuesCopy = [...cues];
+
+    cuesCopy[editingCue] = {
+      start: startFieldValue,
+      end: endFieldValue,
+      text: cueFieldValue,
     }
+
+    setCues(cuesCopy);
+  }
+
+  const handleDeleteCueClick = (index = editingCue) => {
+    let cuesCopy = [...cues];
+    cuesCopy.splice(index, 1);
+    setCues(cuesCopy);
+
+    setEditingCue(null);
+    clearCueFields();
+  }
+
+  const handleCancelCueClick = () => {
+    setEditingCue(null);
+    clearCueFields();
+  }
+
+  const clearCueFields = () => {
+    setStartFieldValue('');
+    setEndFieldValue('');
+    setCueFieldValue('');
   }
 
   return (
-    <>
-      <YouTube
-        ref={videoRef}
-        videoId={props.videoID}
-        opts={{
-          playerVars: {
-            origin: 'http://localhost:3000',
-            modestbranding: 1,
-            rel: 0,
-          },
-        }}
-        onReady={onReady}
-        onPlay={handlePlay}
-        onPause={handlePause}
-      />
-      <StyledControls>
-        <label>
-          Cue Text
-          <input
-            type="text"
-            value={newCueText}
-            onChange={(ev) => setNewCueText(ev.target.value)}
+    <Box sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      p: 2,
+      gap: 2,
+      }}>
+      <Grid container columnSpacing={2} rowSpacing={4}>
+        <Grid xs={12} sm={6} md={8}>
+          <VideoPlayer
+            vid={activeVID}
+            tracks={cues}
+            onTimeChange={handleTimeChange}
           />
-        </label>
-        <label>
-          Start Time
-          <input
-            type="number"
-            value={startTime}
-            onChange={(ev) => setStartTime(ev.target.value)}
-          />
-          <button
-            onClick={() => setStartTime(progressTime)}>
-            set
-          </button>
-        </label>
-        <label>
-          End Time
-          <input
-            type="number"
-            value={endTime}
-            onChange={(ev) => setEndTime(ev.target.value)}
-          />
-          <button
-            onClick={() => setEndTime(progressTime)}>
-            set
-          </button>
-        </label>
-      </StyledControls>
-      <button
-        onClick={handleAddCueClick}
-        disabled={!newCueText}
-        >
-        Add Cue
-      </button>
-      <ul>
-        {cues.sort((a,b) => b.start - a.start).map((cue, i) =>
-          <li key={i}>
-            <p>{`${cue.start} - ${cue.end}`}</p>
-            <p>{cue.text}</p>
-            <button
-              onClick={() => handleDeleteCueClick(i)}>
-              delete
-            </button>
-          </li>
-        )}
-      </ul>
-      <button
-        onClick={handleAddTrack}>
-        Add Track
-      </button>
-    </>
-  );
+
+          <Stack spacing={2}>
+
+            <Typography variant="body1" component="h3">
+              {Number.isInteger(editingCue) ? 'Edit description cue' : 'Add a description cue'}
+            </Typography>
+            
+            <Stack spacing={1} direction="row" alignItems="center">
+
+              <Box sx={{flexGrow: 1}}>
+                <TextField
+                  label="Start"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  value={startFieldValue}
+                  onChange={handleStartFieldValueChange}
+                  type="number"
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          edge="end"
+                          onClick={() => handleTargetClick('start')}>
+                          <MyLocationIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
+              </Box>
+
+              <ArrowRightAltIcon />
+
+              <Box sx={{flexGrow: 1}}>
+
+                <TextField
+                  label="End"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  value={endFieldValue}
+                  onChange={handleEndFieldValueChange}
+                  type="number"
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          edge="end"
+                          onClick={() => handleTargetClick('end')}>
+                          <MyLocationIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
+
+              </Box>
+            </Stack>
+
+            <TextField
+              label="Description"
+              variant="outlined"
+              size="small"
+              fullWidth
+              multiline
+              rows={3}
+              value={cueFieldValue}
+              onChange={handleCueFieldValueChange}
+            />
+
+            <Box sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 2,
+              }}>
+              
+              {Number.isInteger(editingCue) ?
+                <>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleUpdateCueClick}
+                    >
+                    Update
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleDeleteCueClick}
+                    >
+                    Delete
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={handleCancelCueClick}
+                    >
+                    Cancel
+                  </Button>
+                </>
+                :
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleAddCueClick}
+                  >
+                  Add
+                </Button>
+              }
+            </Box>
+          </Stack>
+        </Grid>
+        
+        <Grid xs={12} sm={6} md={4}>
+          <Stack spacing={2}>
+            <Stack
+              spacing={2}
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center">
+              <Typography variant="body1" component="h3">
+                Description Cues
+              </Typography>
+              <Stack direction="row" gap={2}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleSubmitClick}
+                  >
+                  Submit
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  onClick={handleDeleteClick}
+                  >
+                  delete
+                </Button>
+              </Stack>
+            </Stack>
+            
+            {cues.length ?
+              <Stack spacing={2}>
+                {cues.map((cue, i) =>
+                  <Card key={i} sx={{display: 'flex'}}>
+                    <CardActionArea
+                      onClick={() => handleCueClick(i)}
+                      sx={{p: 2}}
+                      >
+                      <Typography variant="overline">{`${secondsToTime(cue.start)} - ${secondsToTime(cue.end)}`}</Typography>
+                      <Typography variant="body2">{cue.text}</Typography>
+                    </CardActionArea>
+                    <CardActions>
+                      <IconButton size="small" onClick={() => handleDeleteCueClick(i)}>
+                        <DeleteIcon fontSize="inherit" />
+                      </IconButton>
+                    </CardActions>
+                  </Card>
+                )}
+              </Stack>
+            : <Typography variant="caption" align="center">nothing here yet</Typography>
+            }
+          </Stack>
+        </Grid>
+      </Grid>
+    </Box>
+  )
 }
 
-VideoPlayer.propTypes = {
-  cues: array,
-  videoID: string,
-}
-
-const StyledControls = styled.div`
-  display: flex;
-`;
-
-export default VideoPlayer;
+export default TrackEditor;

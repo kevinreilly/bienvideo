@@ -2,6 +2,7 @@ type Video @model @auth(rules: [{allow: public}]) {
   id: ID!
   vid: String! @index
   tags: [String]
+  requests: [String]
   Tracks: [Track] @hasMany(indexName: "byVideo", fields: ["id"])
 }
 
@@ -9,6 +10,7 @@ type Track @model @auth(rules: [{allow: public}]) {
   id: ID!
   cues: [AWSJSON!]
   videoID: ID! @index(name: "byVideo")
+  createdBy: String!
 }
 
 type Note @model @auth(rules: [{allow: public}]) {
